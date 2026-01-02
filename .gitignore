@@ -1,4 +1,15 @@
+# Ignore IDE settings
 .idea
 
-# Created by venv; see https://docs.python.org/3/library/venv.html
-*
+# Ignore Python venvs
+venv/
+.env/
+
+# Ignore Python caches
+__pycache__/
+*.pyc
+
+# Ignore node modules if any
+node_modules/
+
+# Allow tracking project files
