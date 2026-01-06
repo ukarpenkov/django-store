@@ -1,8 +1,9 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.views.debug import default_urlconf
 
 urlpatterns = [
+    path('', default_urlconf),
     path('admin/', admin.site.urls),
-    # Root routes (enable after creating the app and its urls.py)
-    path('', include('products.urls')),
+    path('products/', include('products.urls')),
 ]
