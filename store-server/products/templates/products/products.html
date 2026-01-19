@@ -77,11 +77,19 @@
         <div class="col-lg-4 col-md-6 mb-4">
           <div class="card h-100">
             <a href="#">
+              {% if product.image %}
               <img
                 class="card-img-top"
-                src="{% static product.image_url %}"
+                src="{{ product.image.url }}"
+                alt="{{ product.name }}"
+              />
+              {% else %}
+              <img
+                class="card-img-top"
+                src="{% static 'vendor/img/products/Adidas-hoodie.png' %}"
                 alt=""
               />
+              {% endif %}
             </a>
             <div class="card-body">
               <h4 class="card-title">
