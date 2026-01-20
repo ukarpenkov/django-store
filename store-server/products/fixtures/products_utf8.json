@@ -1,0 +1,50 @@
+[
+  {
+    "model": "products.product",
+    "pk": 1,
+    "fields": {
+      "name": "Толстовка adidas Originals",
+      "description": "Толстовка adidas Originals, комфортная и стильная. Мягкая ткань, классический крой, фирменный логотип Trefoil на груди.",
+      "price": "6090.00",
+      "quantity": 8,
+      "image": "product_images/nextJs.jpg",
+      "category": 1
+    }
+  },
+  {
+    "model": "products.product",
+    "pk": 2,
+    "fields": {
+      "name": "test",
+      "description": "test decr",
+      "price": "120.00",
+      "quantity": 1,
+      "image": "product_images/Screenshot_2024-07-27_003607.png",
+      "category": 2
+    }
+  },
+  {
+    "model": "products.product",
+    "pk": 3,
+    "fields": {
+      "name": "001",
+      "description": "002",
+      "price": "222.00",
+      "quantity": 22,
+      "image": "product_images/002.png",
+      "category": 1
+    }
+  },
+  {
+    "model": "products.product",
+    "pk": 4,
+    "fields": {
+      "name": "232",
+      "description": "313",
+      "price": "321.00",
+      "quantity": 1,
+      "image": "product_images/-001.png",
+      "category": 2
+    }
+  }
+]
