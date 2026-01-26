@@ -1,1 +1,1 @@
-# Store Django Project
+# Store Django Project!
