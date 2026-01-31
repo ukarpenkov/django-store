@@ -1,8 +1,10 @@
 from django.shortcuts import render
+from users.forms import UserLoginForm
 
 
 def login(request):
-    return render(request, "users/login.html")
+    form = UserLoginForm()
+    return render(request, "users/login.html", {"form": form})
 
 
 def register(request):
