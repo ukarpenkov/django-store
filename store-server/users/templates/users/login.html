@@ -6,8 +6,10 @@
 {% endblock %} 
 
 {% block form %}
-<form>
+<form action="{% url 'users:login' %}" method="post">
+  {% csrf_token %}
   {{ form.as_p }}
+  {% comment %}
   <div class="form-group">
     <label class="small mb-1" for="inputEmailAddress">Имя пользователя</label>
     <input
@@ -26,6 +28,7 @@
       placeholder="Введите пароль"
     />
   </div> 
+  {% endcomment %}
   <div
     class="form-group d-flex align-items-center justify-content-between mt-4 mb-0"
   >
@@ -48,6 +51,7 @@
       <i class="fab fa-facebook fa-2x" style="color: #405794"></i>
     </a>
   </div>
+
 </form>
 {% endblock %} {% block footer_link %}
 <a href="{% url 'users:register' %}">Нужен аккаунт? Зарегистрируйся!</a>
