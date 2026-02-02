@@ -1,6 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, HttpResponseRedirect
 from users.forms import UserLoginForm
-
+from django.urls import reverse
 from django.contrib import auth
 
 
@@ -13,7 +13,7 @@ def login(request):
             user = auth.authenticate(username=username, password=password)
             if user:
                 auth.login(request, user)
-                # Redirect or process the login
+                return HttpResponseRedirect(reverse("index"))
             pass
     else:
         form = UserLoginForm()
