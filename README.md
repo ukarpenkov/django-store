@@ -1,2 +1,2 @@
-# Store Django Project!
+# Store Django Project!!!!
 # hello! ٩(◕‿◕｡)۶
