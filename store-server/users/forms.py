@@ -1,4 +1,11 @@
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    UserCreationForm,
+    PasswordChangeForm,
+    UserChangeForm,
+    PasswordResetForm,
+    SetPasswordForm,
+)
 from users.models import User
 from django import forms
 
@@ -74,3 +81,29 @@ class UserRegistrationForm(UserCreationForm):
             "password1",
             "password2",
         ]
+
+
+class UserProfileForm(forms.ModelForm):
+    username = forms.CharField(
+        label="Username",
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": "form-control py-4", "readonly": True}),
+    )
+    email = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(attrs={"class": "form-control py-4", "readonly": True}),
+    )
+    first_name = forms.CharField(
+        label="First Name",
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": "form-control py-4"}),
+    )
+    last_name = forms.CharField(
+        label="Last Name",
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": "form-control py-4"}),
+    )
+
+    class Meta:
+        model = User
+        fields = ["username", "email", "first_name", "last_name"]
