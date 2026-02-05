@@ -103,7 +103,14 @@ class UserProfileForm(forms.ModelForm):
         max_length=150,
         widget=forms.TextInput(attrs={"class": "form-control py-4"}),
     )
+    image = forms.ImageField(
+        label="Profile Image",
+        required=False,
+        widget=forms.ClearableFileInput(
+            attrs={"class": "custom-file-input", "id": "userAvatar"}
+        ),
+    )
 
     class Meta:
         model = User
-        fields = ["username", "email", "first_name", "last_name"]
+        fields = ["username", "email", "first_name", "last_name", "image"]
