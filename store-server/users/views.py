@@ -46,3 +46,9 @@ def profile(request):
             pass
     form = UserProfileForm(instance=request.user)
     return render(request, "users/profile.html", {"form": form})
+
+
+@login_required
+def logout(request):
+    auth.logout(request)
+    return HttpResponseRedirect(reverse("index"))
