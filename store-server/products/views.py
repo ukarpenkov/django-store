@@ -18,16 +18,21 @@ def products(request):
     return render(request, "products/products.html", context)
 
 
-
 def basket_add(request, product_id):
-    product = Product.objects.get(id = product_id)
-    basket = Basket.objects.filter(user=request.user, product=product)
+    try:
+        product = Product.objects.get(id=product_id)
+    except Product.DoesNotExist:
+        return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/"))
 
-    if not basket.exists():
-        Basket.objects.create(user=request.user, product=product, quantity = 1)
-    else:
-        basket = basket.first()
-        basket.quantity +=1
-        basket.save()
+    basket, created = Basket.objects.get_or_create(
+        user=request.user, product=product, defaults={"quantity": 1}
+    )
 
-    return HttpResponseRedirect(request.META['HTTP_REFERER'])
+    if not created:
+        from django.db.models import F
+
+        Basket.objects.filter(user=request.user, product=product).update(
+            quantity=F("quantity") + 1
+        )
+
+    return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/"))
