@@ -99,9 +99,24 @@
               <p class="card-text">{{ product.description }}</p>
             </div>
             <div class="card-footer text-center">
-              <button type="button" class="btn btn-outline-success">
-                Отправить в корзину
-              </button>
+              <form action="{% url 'products:basket_add' product.id %}" method="post">
+                {% csrf_token %}
+                <div class="input-group">
+                  <input
+                    type="number"
+                    name="quantity"
+                    class="form-control"
+                    value="1"
+                    min="1"
+                    max="{{ product.quantity }}"
+                  />
+                  <div class="input-group-append">
+                    <button type="submit" class="btn btn-outline-success">
+                      В корзину
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
         </div>

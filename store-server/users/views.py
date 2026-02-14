@@ -4,6 +4,8 @@ from django.urls import reverse
 from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required
 
+from products.models import Basket
+
 
 def login(request):
     if request.method == "POST":
@@ -45,7 +47,21 @@ def profile(request):
             # Redirect or process the profile update
             pass
     form = UserProfileForm(instance=request.user)
-    return render(request, "users/profile.html", {"form": form})
+    basket_items = (
+        Basket.objects.filter(user=request.user)
+        .select_related("product")
+        .order_by("-created_timestamp")
+    )
+    return render(
+        request,
+        "users/profile.html",
+        {
+            "form": form,
+            "basket": basket_items,
+            "basket_total_sum": sum((item.sum for item in basket_items), 0),
+            "basket_total_quantity": sum((item.quantity for item in basket_items), 0),
+        },
+    )
 
 
 @login_required
