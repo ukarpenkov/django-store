@@ -1,4 +1,5 @@
 from django.shortcuts import render, HttpResponseRedirect
+from django.utils.http import url_has_allowed_host_and_scheme
 from users.forms import UserLoginForm, UserRegistrationForm, UserProfileForm
 from django.urls import reverse
 from django.contrib import auth, messages
@@ -16,11 +17,15 @@ def login(request):
             user = auth.authenticate(username=username, password=password)
             if user:
                 auth.login(request, user)
+                next_url = request.POST.get("next") or request.GET.get("next", reverse("index"))
+                if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts=request.get_host()):
+                    return HttpResponseRedirect(next_url)
                 return HttpResponseRedirect(reverse("index"))
             pass
     else:
         form = UserLoginForm()
-    return render(request, "users/login.html", {"form": form})
+    context = {"form": form, "next": request.GET.get("next", "")}
+    return render(request, "users/login.html", context)
 
 
 def register(request):
