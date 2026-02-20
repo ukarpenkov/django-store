@@ -16,11 +16,13 @@ def products(request, category_id=None, page_number=1):
         products = Product.objects.filter(category_id=category_id)
     else:
         products = Product.objects.all()
+    page_number = request.GET.get("page", page_number)
     paginator = Paginator(products, 3)
-    products = paginator.page(page_number)
+    page = paginator.get_page(page_number)
     context = {
         "title": "Store - Каталог",
-        "products": products,
+        "products": page.object_list,
+        "page": page,
         "categories": ProductCategory.objects.all(),
     }
     return render(request, "products/products.html", context)
