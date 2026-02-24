@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from products.views import index, products
+from products.views import IndexView, products
 
 # from store import settings
 from django.conf import settings
@@ -8,7 +8,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", index, name="index"),
+    path("", IndexView.as_view(), name="index"),
     path("products/", include("products.urls")),
     path("users/", include(("users.urls", "users"), namespace="users")),
 ]
