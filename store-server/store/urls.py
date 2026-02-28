@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from products.views import IndexView, products
+from products.views import IndexView
 
 # from store import settings
 from django.conf import settings
