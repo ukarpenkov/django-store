@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, TemplateView
@@ -40,20 +41,27 @@ class ProductsListView(ListView):
         return super().get(request, *args, **kwargs)
 
 
-@login_required
-def basket(request):
-    basket_items = (
-        Basket.objects.filter(user=request.user)
-        .select_related("product")
-        .order_by("-created_timestamp")
-    )
-    context = {
-        "title": "Store - Корзина",
-        "basket": basket_items,
-        "basket_total_sum": sum((item.sum for item in basket_items), 0),
-        "basket_total_quantity": sum((item.quantity for item in basket_items), 0),
-    }
-    return render(request, "products/basket_page.html", context)
+class BasketListView(LoginRequiredMixin, ListView):
+    model = Basket
+    template_name = "products/basket_page.html"
+    context_object_name = "basket"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(user=self.request.user)
+            .select_related("product")
+            .order_by("-created_timestamp")
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        basket_items = context["basket"]
+        context["title"] = "Store - Корзина"
+        context["basket_total_sum"] = sum((item.sum for item in basket_items), 0)
+        context["basket_total_quantity"] = sum((item.quantity for item in basket_items), 0)
+        return context
 
 
 @login_required
