@@ -1,11 +1,14 @@
 from django.shortcuts import render, HttpResponseRedirect
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.generic.edit import FormView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from users.forms import UserLoginForm, UserRegistrationForm, UserProfileForm
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required
 
 from products.models import Basket
+from users.models import User
 
 
 def login(request):
@@ -28,45 +31,39 @@ def login(request):
     return render(request, "users/login.html", context)
 
 
-def register(request):
-    if request.method == "POST":
-        form = UserRegistrationForm(data=request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Вы успешно зарегистрировались!")
-            auth.login(request, form.instance)
-            return HttpResponseRedirect(reverse("users:login"))
-    else:
-        form = UserRegistrationForm()
-    return render(request, "users/register.html", {"form": form})
+class UserRegistrationView(FormView):
+    form_class = UserRegistrationForm
+    template_name = "users/register.html"
+    success_url = reverse_lazy("users:login")
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, "Вы успешно зарегистрировались!")
+        auth.login(self.request, form.instance)
+        return HttpResponseRedirect(reverse("users:login"))
 
 
-@login_required
-def profile(request):
-    if request.method == "POST":
-        form = UserProfileForm(
-            data=request.POST, files=request.FILES, instance=request.user
+class UserProfileView(LoginRequiredMixin, UpdateView):
+    model = User
+    form_class = UserProfileForm
+    template_name = "users/profile.html"
+    success_url = reverse_lazy("users:profile")
+    login_url = reverse_lazy("users:login")
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        basket_items = (
+            Basket.objects.filter(user=self.request.user)
+            .select_related("product")
+            .order_by("-created_timestamp")
         )
-        if form.is_valid():
-            form.save()
-            # Redirect or process the profile update
-            pass
-    form = UserProfileForm(instance=request.user)
-    basket_items = (
-        Basket.objects.filter(user=request.user)
-        .select_related("product")
-        .order_by("-created_timestamp")
-    )
-    return render(
-        request,
-        "users/profile.html",
-        {
-            "form": form,
-            "basket": basket_items,
-            "basket_total_sum": sum((item.sum for item in basket_items), 0),
-            "basket_total_quantity": sum((item.quantity for item in basket_items), 0),
-        },
-    )
+        context["basket"] = basket_items
+        context["basket_total_sum"] = sum((item.sum for item in basket_items), 0)
+        context["basket_total_quantity"] = sum((item.quantity for item in basket_items), 0)
+        return context
 
 
 @login_required
