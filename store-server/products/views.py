@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, TemplateView
 
 from .models import Basket, Product, ProductCategory
@@ -60,7 +60,9 @@ class BasketListView(LoginRequiredMixin, ListView):
         basket_items = context["basket"]
         context["title"] = "Store - Корзина"
         context["basket_total_sum"] = sum((item.sum for item in basket_items), 0)
-        context["basket_total_quantity"] = sum((item.quantity for item in basket_items), 0)
+        context["basket_total_quantity"] = sum(
+            (item.quantity for item in basket_items), 0
+        )
         return context
 
 

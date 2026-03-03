@@ -3,7 +3,8 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic.edit import FormView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from users.forms import UserLoginForm, UserRegistrationForm, UserProfileForm
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
+from users.utils import get_users_url
 from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required
 
@@ -34,7 +35,7 @@ def login(request):
 class UserRegistrationView(FormView):
     form_class = UserRegistrationForm
     template_name = "users/register.html"
-    success_url = reverse_lazy("users:login")
+    success_url = get_users_url("login")
 
     def form_valid(self, form):
         form.save()
@@ -47,8 +48,8 @@ class UserProfileView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = UserProfileForm
     template_name = "users/profile.html"
-    success_url = reverse_lazy("users:profile")
-    login_url = reverse_lazy("users:login")
+    success_url = get_users_url("profile")
+    login_url = get_users_url("login")
 
     def get_object(self, queryset=None):
         return self.request.user
