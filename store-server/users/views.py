@@ -1,47 +1,35 @@
-from django.shortcuts import render, HttpResponseRedirect
-from django.utils.http import url_has_allowed_host_and_scheme
+from django.shortcuts import HttpResponseRedirect
+from django.views.generic import View
 from django.views.generic.edit import FormView, UpdateView
+from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from users.forms import UserLoginForm, UserRegistrationForm, UserProfileForm
 from django.urls import reverse
 from users.utils import get_users_url
-from django.contrib import auth, messages
-from django.contrib.auth.decorators import login_required
+from django.contrib import auth
 
 from products.models import Basket
 from users.models import User
 
 
-def login(request):
-    if request.method == "POST":
-        form = UserLoginForm(data=request.POST)
-        if form.is_valid():
-            username = request.POST["username"]
-            password = request.POST["password"]
-            user = auth.authenticate(username=username, password=password)
-            if user:
-                auth.login(request, user)
-                next_url = request.POST.get("next") or request.GET.get("next", reverse("index"))
-                if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts=request.get_host()):
-                    return HttpResponseRedirect(next_url)
-                return HttpResponseRedirect(reverse("index"))
-            pass
-    else:
-        form = UserLoginForm()
-    context = {"form": form, "next": request.GET.get("next", "")}
-    return render(request, "users/login.html", context)
+class UserLoginView(SuccessMessageMixin, LoginView):
+    authentication_form = UserLoginForm
+    template_name = "users/login.html"
+    redirect_authenticated_user = False
+    success_message = "Вы авторизованы"
 
 
-class UserRegistrationView(FormView):
+class UserRegistrationView(SuccessMessageMixin, FormView):
     form_class = UserRegistrationForm
     template_name = "users/register.html"
     success_url = get_users_url("login")
+    success_message = "Вы успешно зарегистрировались!"
 
     def form_valid(self, form):
         form.save()
-        messages.success(self.request, "Вы успешно зарегистрировались!")
         auth.login(self.request, form.instance)
-        return HttpResponseRedirect(reverse("users:login"))
+        return super().form_valid(form)
 
 
 class UserProfileView(LoginRequiredMixin, UpdateView):
@@ -67,7 +55,13 @@ class UserProfileView(LoginRequiredMixin, UpdateView):
         return context
 
 
-@login_required
-def logout(request):
-    auth.logout(request)
-    return HttpResponseRedirect(reverse("index"))
+class UserLogoutView(LoginRequiredMixin, View):
+    login_url = get_users_url("login")
+
+    def get(self, request, *args, **kwargs):
+        auth.logout(request)
+        return HttpResponseRedirect(reverse("index"))
+
+    def post(self, request, *args, **kwargs):
+        auth.logout(request)
+        return HttpResponseRedirect(reverse("index"))
