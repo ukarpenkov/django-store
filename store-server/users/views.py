@@ -9,8 +9,9 @@ from django.urls import reverse
 from users.utils import get_users_url
 from django.contrib import auth
 
+from django.utils import timezone
 from products.models import Basket
-from users.models import User
+from users.models import User, EmailVerification
 
 
 class UserLoginView(SuccessMessageMixin, LoginView):
@@ -53,6 +54,17 @@ class UserProfileView(LoginRequiredMixin, UpdateView):
         context["basket_total_sum"] = sum((item.sum for item in basket_items), 0)
         context["basket_total_quantity"] = sum((item.quantity for item in basket_items), 0)
         return context
+
+
+class EmailVerificationView(View):
+    def get(self, request, code):
+        verification = EmailVerification.objects.filter(code=code).first()
+        if verification and verification.expiration > timezone.now():
+            verification.user.is_verified_email = True
+            verification.user.save()
+            verification.delete()
+            return HttpResponseRedirect(get_users_url("login"))
+        return HttpResponseRedirect(get_users_url("register"))
 
 
 class UserLogoutView(LoginRequiredMixin, View):

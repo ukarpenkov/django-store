@@ -6,8 +6,11 @@ from django.contrib.auth.forms import (
     PasswordResetForm,
     SetPasswordForm,
 )
-from users.models import User
+from users.models import EmailVerification, User
 from django import forms
+from django.utils import timezone
+from datetime import timedelta
+import uuid
 
 
 class UserLoginForm(AuthenticationForm):
@@ -81,6 +84,21 @@ class UserRegistrationForm(UserCreationForm):
             "password1",
             "password2",
         ]
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"]
+        user.first_name = self.cleaned_data["first_name"]
+        user.last_name = self.cleaned_data["last_name"]
+        if commit:
+            user.save()
+            verification = EmailVerification.objects.create(
+                code=uuid.uuid4(),
+                user=user,
+                expiration=timezone.now() + timedelta(hours=48),
+            )
+            verification.send_verification_email()
+        return user
 
 
 class UserProfileForm(forms.ModelForm):
