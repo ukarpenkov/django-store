@@ -1,3 +1,5 @@
+from urllib.parse import quote
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
@@ -35,7 +37,10 @@ class EmailVerification(models.Model):
         return f"EmailVerification object for {self.user.email}"
 
     def send_verification_email(self):
-        link = reverse("users:verify", kwargs={"code": str(self.code)})
+        link = reverse(
+            "users:verify",
+            kwargs={"email": quote(self.user.email, safe=""), "code": str(self.code)},
+        )
         verification_url = f"{getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000')}{link}"
         send_mail(
             subject="Email verification",

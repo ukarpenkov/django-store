@@ -1,5 +1,7 @@
+from urllib.parse import unquote
+
 from django.shortcuts import HttpResponseRedirect
-from django.views.generic import View
+from django.views.generic import TemplateView, View
 from django.views.generic.edit import FormView, UpdateView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -56,14 +58,23 @@ class UserProfileView(LoginRequiredMixin, UpdateView):
         return context
 
 
-class EmailVerificationView(View):
-    def get(self, request, code):
-        verification = EmailVerification.objects.filter(code=code).first()
+class EmailVerificationView(TemplateView):
+    template_name = "users/email_verification.html"
+    title = "Store - Подтверждение электронной почты"
+
+    def get(self, request, *args, **kwargs):
+        email = unquote(kwargs.get("email", ""))
+        code = kwargs.get("code")
+        verification = EmailVerification.objects.filter(
+            code=code, user__email=email
+        ).first()
         if verification and verification.expiration > timezone.now():
             verification.user.is_verified_email = True
             verification.user.save()
             verification.delete()
-            return HttpResponseRedirect(get_users_url("login"))
+            context = self.get_context_data()
+            context["title"] = self.title
+            return self.render_to_response(context)
         return HttpResponseRedirect(get_users_url("register"))
 
 
