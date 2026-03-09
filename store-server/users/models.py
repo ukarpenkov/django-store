@@ -42,10 +42,23 @@ class EmailVerification(models.Model):
             kwargs={"email": quote(self.user.email, safe=""), "code": str(self.code)},
         )
         verification_url = f"{getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000')}{link}"
+        subject = "Email verification"
+        message = f"Follow the link to verify your email: {verification_url}"
+        from_email = settings.DEFAULT_FROM_EMAIL or "noreply@store.com"
+        recipient_list = [self.user.email]
+
         send_mail(
-            subject="Email verification",
-            message=f"Follow the link to verify your email: {verification_url}",
-            from_email=settings.DEFAULT_FROM_EMAIL or "noreply@store.com",
-            recipient_list=[self.user.email],
+            subject=subject,
+            message=message,
+            from_email=from_email,
+            recipient_list=recipient_list,
             fail_silently=False,
         )
+
+        # Вывод письма в консоль при разработке
+        print("\n" + "=" * 60 + "\nПисьмо верификации (регистрация)\n" + "=" * 60)
+        print(f"Кому: {', '.join(recipient_list)}")
+        print(f"От: {from_email}")
+        print(f"Тема: {subject}")
+        print(f"Текст:\n{message}")
+        print("=" * 60 + "\n")
