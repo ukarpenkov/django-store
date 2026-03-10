@@ -132,6 +132,13 @@ LOGIN_URL = "/users/login/"
 LOGIN_REDIRECT_URL = "/"
 
 # Email configuration
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "noreply@store.com"
+DEFAULT_FROM_EMAIL = "xxxxx"
 SITE_URL = "http://127.0.0.1:8000"
+
+
+EMAIL_HOST = 'smtp.yandex.com'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'xxxxx'
+EMAIL_HOST_PASSWORD = 'xxxxxb'
+EMAIL_USE_SSL = False
+EMAIL_USE_TLS = True
