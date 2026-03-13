@@ -10,7 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -136,9 +141,9 @@ DEFAULT_FROM_EMAIL = "xxxxx"
 SITE_URL = "http://127.0.0.1:8000"
 
 
-EMAIL_HOST = 'smtp.yandex.com'
-EMAIL_PORT = 465
-EMAIL_HOST_USER = 'xxxxx'
-EMAIL_HOST_PASSWORD = 'xxxxxb'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.yandex.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 465))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_SSL = False
 EMAIL_USE_TLS = True
