@@ -18,8 +18,8 @@ class ProductAdmin(admin.ModelAdmin):
 class BasketAdmin(admin.TabularInline):
     model = Basket
     fields = ('product', 'quantity', 'created_timestamp')
-    readonly_fields =('created_timestamp',)
-    extra =0
+    readonly_fields = ('created_timestamp',)
+    extra = 0
 
 
 admin.site.register(ProductCategory, ProductCategoryAdmin)

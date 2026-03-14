@@ -53,8 +53,12 @@ class UserProfileView(LoginRequiredMixin, UpdateView):
             .order_by("-created_timestamp")
         )
         context["basket"] = basket_items
-        context["basket_total_sum"] = sum((item.sum for item in basket_items), 0)
-        context["basket_total_quantity"] = sum((item.quantity for item in basket_items), 0)
+        context["basket_total_sum"] = sum(
+            (item.sum for item in basket_items), 0
+        )
+        context["basket_total_quantity"] = sum(
+            (item.quantity for item in basket_items), 0
+        )
         return context
 
 

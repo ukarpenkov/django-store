@@ -1,11 +1,4 @@
-from django.contrib.auth.forms import (
-    AuthenticationForm,
-    UserCreationForm,
-    PasswordChangeForm,
-    UserChangeForm,
-    PasswordResetForm,
-    SetPasswordForm,
-)
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from users.models import EmailVerification, User
 from django import forms
 from django.utils import timezone
@@ -18,13 +11,19 @@ class UserLoginForm(AuthenticationForm):
         label="Username",
         max_length=150,
         widget=forms.TextInput(
-            attrs={"class": "form-control py-4", "placeholder": "Enter your username"}
+            attrs={
+                "class": "form-control py-4",
+                "placeholder": "Enter your username",
+            }
         ),
     )
     password = forms.CharField(
         label="Password",
         widget=forms.PasswordInput(
-            attrs={"class": "form-control py-4", "placeholder": "Enter your password"}
+            attrs={
+                "class": "form-control py-4",
+                "placeholder": "Enter your password",
+            }
         ),
     )
 
@@ -38,39 +37,57 @@ class UserRegistrationForm(UserCreationForm):
         label="Username",
         max_length=150,
         widget=forms.TextInput(
-            attrs={"class": "form-control py-4", "placeholder": "Enter your username"}
+            attrs={
+                "class": "form-control py-4",
+                "placeholder": "Enter your username",
+            }
         ),
     )
     email = forms.EmailField(
         label="Email",
         widget=forms.EmailInput(
-            attrs={"class": "form-control py-4", "placeholder": "Enter your email"}
+            attrs={
+                "class": "form-control py-4",
+                "placeholder": "Enter your email",
+            }
         ),
     )
     first_name = forms.CharField(
         label="First Name",
         max_length=150,
         widget=forms.TextInput(
-            attrs={"class": "form-control py-4", "placeholder": "Enter your first name"}
+            attrs={
+                "class": "form-control py-4",
+                "placeholder": "Enter your first name",
+            }
         ),
     )
     last_name = forms.CharField(
         label="Last Name",
         max_length=150,
         widget=forms.TextInput(
-            attrs={"class": "form-control py-4", "placeholder": "Enter your last name"}
+            attrs={
+                "class": "form-control py-4",
+                "placeholder": "Enter your last name",
+            }
         ),
     )
     password1 = forms.CharField(
         label="Password",
         widget=forms.PasswordInput(
-            attrs={"class": "form-control py-4", "placeholder": "Enter your password"}
+            attrs={
+                "class": "form-control py-4",
+                "placeholder": "Enter your password",
+            }
         ),
     )
     password2 = forms.CharField(
         label="Confirm Password",
         widget=forms.PasswordInput(
-            attrs={"class": "form-control py-4", "placeholder": "Confirm your password"}
+            attrs={
+                "class": "form-control py-4",
+                "placeholder": "Confirm your password",
+            }
         ),
     )
 
@@ -105,21 +122,29 @@ class UserProfileForm(forms.ModelForm):
     username = forms.CharField(
         label="Username",
         max_length=150,
-        widget=forms.TextInput(attrs={"class": "form-control py-4", "readonly": True}),
+        widget=forms.TextInput(
+            attrs={"class": "form-control py-4", "readonly": True}
+        ),
     )
     email = forms.EmailField(
         label="Email",
-        widget=forms.EmailInput(attrs={"class": "form-control py-4", "readonly": True}),
+        widget=forms.EmailInput(
+            attrs={"class": "form-control py-4", "readonly": True}
+        ),
     )
     first_name = forms.CharField(
         label="First Name",
         max_length=150,
-        widget=forms.TextInput(attrs={"class": "form-control py-4"}),
+        widget=forms.TextInput(
+            attrs={"class": "form-control py-4"}
+        ),
     )
     last_name = forms.CharField(
         label="Last Name",
         max_length=150,
-        widget=forms.TextInput(attrs={"class": "form-control py-4"}),
+        widget=forms.TextInput(
+            attrs={"class": "form-control py-4"}
+        ),
     )
     image = forms.ImageField(
         label="Profile Image",

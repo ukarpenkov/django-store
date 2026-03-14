@@ -59,7 +59,9 @@ class BasketListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         basket_items = context["basket"]
         context["title"] = "Store - Корзина"
-        context["basket_total_sum"] = sum((item.sum for item in basket_items), 0)
+        context["basket_total_sum"] = sum(
+            (item.sum for item in basket_items), 0
+        )
         context["basket_total_quantity"] = sum(
             (item.quantity for item in basket_items), 0
         )
@@ -87,7 +89,9 @@ def basket_add(request, product_id):
     basket_item, _ = Basket.objects.get_or_create(
         user=request.user, product=product, defaults={"quantity": 0}
     )
-    basket_item.quantity = min(basket_item.quantity + quantity_to_add, product.quantity)
+    basket_item.quantity = min(
+        basket_item.quantity + quantity_to_add, product.quantity
+    )
     basket_item.save(update_fields=["quantity"])
 
     return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/"))
@@ -120,7 +124,9 @@ def basket_update(request, basket_id):
 @login_required
 def basket_remove(request, basket_id):
     if request.method == "POST":
-        basket_item = Basket.objects.filter(id=basket_id, user=request.user).first()
+        basket_item = Basket.objects.filter(
+            id=basket_id, user=request.user
+        ).first()
         if basket_item:
             basket_item.delete()
 
