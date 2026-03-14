@@ -1,19 +1,19 @@
 from urllib.parse import unquote
 
+from django.contrib import auth
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView
+from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import HttpResponseRedirect
+from django.urls import reverse
+from django.utils import timezone
 from django.views.generic import TemplateView, View
 from django.views.generic.edit import FormView, UpdateView
-from django.contrib.auth.views import LoginView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.messages.views import SuccessMessageMixin
-from users.forms import UserLoginForm, UserRegistrationForm, UserProfileForm
-from django.urls import reverse
-from users.utils import get_users_url
-from django.contrib import auth
 
-from django.utils import timezone
 from products.models import Basket
-from users.models import User, EmailVerification
+from users.forms import UserLoginForm, UserProfileForm, UserRegistrationForm
+from users.models import EmailVerification, User
+from users.utils import get_users_url
 
 
 class UserLoginView(SuccessMessageMixin, LoginView):
