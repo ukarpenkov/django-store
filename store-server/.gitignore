@@ -9,5 +9,5 @@ __pycache__/
 # Environment files
 .env
 .env.example
-
+db.sqlite3
 static/vendor
