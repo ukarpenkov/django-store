@@ -168,8 +168,15 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 SITE_ID = 1
+
+# GitHub: client id / secret в админке «Social applications».
+# Обязательно отметьте сайт с id = SITE_ID (см. django_site), иначе login даст DoesNotExist.
+# Callback в GitHub OAuth App: …/accounts/github/login/callback/
 SOCIALACCOUNT_PROVIDERS = {
     "github": {
-        "SCOPE": ["user"],
+        "SCOPE": ["read:user", "user:email"],
+        "VERIFIED_EMAIL": True,
     }
 }
+
+SOCIALACCOUNT_ADAPTER = "users.adapters.SocialAccountAdapter"
