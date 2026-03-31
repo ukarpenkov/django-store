@@ -101,6 +101,34 @@ DATABASES = {
     }
 }
 
+# Cache: Redis (django-redis) в проде или при USE_REDIS=1; в DEBUG без флага — LocMemCache
+# (чтобы runserver работал без локального Redis).
+# https://github.com/jazzband/django-redis
+REDIS_URL = os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/1")
+_USE_REDIS = os.environ.get("USE_REDIS", "").lower() in ("1", "true", "yes")
+
+if _USE_REDIS or not DEBUG:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            },
+            "KEY_PREFIX": "store",
+            "TIMEOUT": 300,
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "store-local",
+            "KEY_PREFIX": "store",
+            "TIMEOUT": 300,
+        }
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

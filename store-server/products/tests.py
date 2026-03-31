@@ -1,4 +1,5 @@
-from django.test import TestCase, Client
+from django.core.cache import cache
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.views.generic import TemplateView
 
@@ -39,12 +40,20 @@ class IndexViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    }
+)
 class ProductsViewTestCase(TestCase):
     """Тесты для ProductsListView"""
 
     def setUp(self):
         """Инициализация тестового клиента и тестовых данных"""
         self.client = Client()
+        cache.clear()
 
         # Создаем дополнительные категории для тестирования (кроме тех что в миграции)
         self.test_category1 = ProductCategory.objects.create(

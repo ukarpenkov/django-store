@@ -1,10 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, TemplateView
 
 from .models import Basket, Product, ProductCategory
+from .product_list_cache import cache_timeout, product_pks_cache_key
 
 
 class IndexView(TemplateView):
@@ -22,11 +24,19 @@ class ProductsListView(ListView):
     paginate_by = 3
 
     def get_queryset(self):
-        queryset = super().get_queryset().order_by("id")
         category_id = self.kwargs.get("category_id")
-        if category_id:
-            queryset = queryset.filter(category_id=category_id)
-        return queryset
+        key = product_pks_cache_key(category_id)
+
+        def fetch_pks() -> list[int]:
+            qs = Product.objects.order_by("id")
+            if category_id:
+                qs = qs.filter(category_id=category_id)
+            return list(qs.values_list("pk", flat=True))
+
+        pks = cache.get_or_set(key, fetch_pks, timeout=cache_timeout())
+        if not pks:
+            return Product.objects.none()
+        return Product.objects.filter(pk__in=pks).order_by("id")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
