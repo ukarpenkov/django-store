@@ -31,7 +31,11 @@ class UserRegistrationView(SuccessMessageMixin, FormView):
 
     def form_valid(self, form):
         form.save()
-        auth.login(self.request, form.instance)
+        auth.login(
+            self.request,
+            form.instance,
+            backend="django.contrib.auth.backends.ModelBackend",
+        )
         return super().form_valid(form)
 
 

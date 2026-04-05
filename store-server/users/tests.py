@@ -10,10 +10,6 @@ from users.models import EmailVerification, User
     EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
     CELERY_TASK_ALWAYS_EAGER=True,
     CELERY_TASK_EAGER_PROPAGATES=True,
-    # Иначе auth.login() падает: несколько бэкендов (allauth + ModelBackend)
-    AUTHENTICATION_BACKENDS=[
-        "django.contrib.auth.backends.ModelBackend",
-    ],
 )
 class UserRegistrationViewTestCase(TestCase):
     """Тесты для UserRegistrationView"""
