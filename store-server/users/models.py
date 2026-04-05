@@ -2,7 +2,6 @@ from urllib.parse import quote
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.core.mail import send_mail
 from django.db import models
 from django.urls import reverse
 
@@ -51,27 +50,11 @@ class EmailVerification(models.Model):
         from_email = settings.EMAIL_HOST_USER
         recipient_list = [self.user.email]
 
-        try:
-            send_mail(
-                subject=subject,
-                message=message,
-                from_email=from_email,
-                recipient_list=recipient_list,
-                fail_silently=False,
-            )
-        except Exception as e:
-            print(f"\n[SMTP] Не удалось отправить письмо: {e}")
-            print(
-                "[SMTP] Ссылка для верификации выведена ниже — "
-                "скопируйте её вручную.\n"
-            )
+        from users.tasks import send_verification_email_task
 
-        # Вывод письма в консоль (для разработки или если SMTP не сработал)
-        header = "=" * 60
-        print(f"\n{header}\nПисьмо верификации (регистрация)\n{header}")
-        print(f"Кому: {', '.join(recipient_list)}")
-        print(f"От: {from_email}")
-        print(f"Тема: {subject}")
-        print(f"Текст:\n{message}")
-        print(f"Ссылка для верификации: {verification_url}")
-        print("=" * 60 + "\n")
+        send_verification_email_task.delay(
+            subject,
+            message,
+            from_email,
+            recipient_list,
+        )
