@@ -8,82 +8,96 @@
 {% endblock %}
 
 {% block content %}
-<section style="padding-top: 80px;">
-    <div class="alert alert-warning text-center" role="alert">
-        Пожалуйста, заполните адрес электронной почты.
-    </div>
-    <div class="container">
-        <div class="py-5 text-center">
-            <h1>Оформление заказа</h1>
-        </div>
-        <div class="row g-5">
-            <div class="col-md-5 col-lg-4 order-md-last">
-                <h4 class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-primary">Корзина</span>
-                    <span class="badge badge-primary badge-pill text-white">3</span>
-                </h4>
-                <ul class="list-group mb-3">
-                    <li class="list-group-item d-flex justify-content-between lh-sm">
-                        <div>
-                            <h6 class="my-0">Product name</h6>
-                            <small class="text-muted">2 шт.</small>
-                        </div>
-                        <span class="text-muted">11 400 руб.</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between lh-sm">
-                        <div>
-                            <h6 class="my-0">Second product</h6>
-                            <small class="text-muted">1 шт.</small>
-                        </div>
-                        <span class="text-muted">3 200 руб.</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between lh-sm">
-                        <div>
-                            <h6 class="my-0">Third item</h6>
-                            <small class="text-muted">3 шт.</small>
-                        </div>
-                        <span class="text-muted">12 894 руб.</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Сумма к оплате</span>
-                        <strong>27 497 руб.</strong>
-                    </li>
-                </ul>
+  <div class="container" style="padding-top: 80px;">
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <h1 class="text-center mb-4">Оформление заказа</h1>
+
+        <h4 class="mt-3 mb-3 d-flex justify-content-between align-items-center">
+          Ваш заказ
+          <span class="badge badge-secondary badge-pill">{{ basket_total_quantity }}</span>
+        </h4>
+
+        {% for item in basket %}
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title">{{ item.product.name }}</h5>
+              {% if item.product.description %}
+                <p class="card-text">{{ item.product.description }}</p>
+              {% endif %}
             </div>
-            <div class="col-md-7 col-lg-8">
-                <h4 class="mb-3">Адрес доставки</h4>
-                <form>
-                    <div class="row g-3">
-                        <div class="col-sm-6">
-                            <label for="firstName" class="form-label">Имя</label>
-                            <input type="text" class="form-control" id="firstName" placeholder="Иван" value="" required>
-                        </div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item bg-light">
+                <div class="row text-center align-items-center">
+                  <div class="col-lg-6">
+                    {{ item.quantity }} шт.
+                  </div>
+                  <div class="col-lg-6">
+                    {{ item.sum }} руб.
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        {% endfor %}
 
-                        <div class="col-sm-6">
-                            <label for="lastName" class="form-label">Фамилия</label>
-                            <input type="text" class="form-control" id="lastName" placeholder="Иванов" value=""
-                                   required>
-                        </div>
-
-                        <div class="col-12 mt-3">
-                            <label for="email" class="form-label">Адрес электронной почты</label>
-                            <input type="email" class="form-control" id="email" placeholder="you@example.com">
-                        </div>
-
-                        <div class="col-12 mt-3">
-                            <label for="address" class="form-label">Адрес</label>
-                            <input type="text" class="form-control" id="address"
-                                   placeholder="Россия, Москва, ул. Мира, дом 6" required>
-                        </div>
-
-                    </div>
-
-                    <hr class="my-4">
-
-                    <button class="w-100 btn btn-primary btn-lg" type="submit">Продолжить</button>
-                </form>
-            </div>
+        <div class="card mb-4">
+          <div class="card-footer">
+            <p class="float-left mb-0">Итого</p>
+            <h4 class="float-right mb-0">{{ basket_total_sum }} руб.</h4>
+          </div>
         </div>
+
+        <h4 class="mb-3">Адрес доставки</h4>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <div class="row">
+            <div class="col-sm-6">
+              <label for="{{ form.first_name.id_for_label }}" class="form-label">Имя</label>
+              {{ form.first_name }}
+              {% if form.first_name.errors %}
+                <div class="invalid-feedback d-block">{{ form.first_name.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label for="{{ form.last_name.id_for_label }}" class="form-label">Фамилия</label>
+              {{ form.last_name }}
+              {% if form.last_name.errors %}
+                <div class="invalid-feedback d-block">{{ form.last_name.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="col-12 mt-3">
+              <label for="{{ form.email.id_for_label }}" class="form-label">Адрес электронной почты</label>
+              {{ form.email }}
+              {% if form.email.errors %}
+                <div class="invalid-feedback d-block">{{ form.email.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="col-12 mt-3">
+              <label for="{{ form.address.id_for_label }}" class="form-label">Адрес</label>
+              {{ form.address }}
+              {% if form.address.errors %}
+                <div class="invalid-feedback d-block">{{ form.address.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <div class="clearfix">
+            <a class="btn btn-outline-secondary" href="{% url 'products:basket' %}">В корзину</a>
+            <button class="btn btn-success btn-lg float-right" type="submit">Оформить заказ</button>
+          </div>
+        </form>
+      </div>
     </div>
-</section>
+  </div>
 {% endblock %}
