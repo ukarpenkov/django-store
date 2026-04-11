@@ -1,3 +1,4 @@
+import stripe
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -7,19 +8,32 @@ from django.views.generic.edit import FormView
 from orders.form import OrderForm
 from orders.models import Order
 from products.models import Basket
+from django.conf import settings
 
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 class OrderCreateView(LoginRequiredMixin, FormView):
     template_name = "orders/order-create.html"
     form_class = OrderForm
     success_url = reverse_lazy("orders:order-success")
+    title = "Store - Оформление заказа"
 
-    def dispatch(self, request, *args, **kwargs):
-        if request.method == "GET" and not Basket.objects.filter(
-            user=request.user
-        ).exists():
-            return redirect("products:basket")
-        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        super(OrderCreateView, self).post(request, *args, **kwargs)
+        success_url = f"{settings.SITE_URL}{reverse_lazy('orders:order-success')}"
+        checkout_session = stripe.checkout.Session.create(
+            line_items=[
+                {
+                    # Provide the exact Price ID (for example, price_1234) of the product you want to sell
+                    "price": "{{PRICE_ID}}",
+                    "quantity": 1,
+                },
+            ],
+            mode="payment",
+            success_url=success_url,
+        )
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
