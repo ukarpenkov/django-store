@@ -1,14 +1,17 @@
+from decimal import Decimal, ROUND_HALF_UP
+
 import stripe
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import redirect
-from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect
+from django.urls import reverse, reverse_lazy
 from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
+
 
 from orders.form import OrderForm
 from orders.models import Order
 from products.models import Basket
-from django.conf import settings
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -17,23 +20,6 @@ class OrderCreateView(LoginRequiredMixin, FormView):
     form_class = OrderForm
     success_url = reverse_lazy("orders:order-success")
     title = "Store - Оформление заказа"
-
-
-    def post(self, request, *args, **kwargs):
-        super(OrderCreateView, self).post(request, *args, **kwargs)
-        success_url = f"{settings.SITE_URL}{reverse_lazy('orders:order-success')}"
-        checkout_session = stripe.checkout.Session.create(
-            line_items=[
-                {
-                    # Provide the exact Price ID (for example, price_1234) of the product you want to sell
-                    "price": "{{PRICE_ID}}",
-                    "quantity": 1,
-                },
-            ],
-            mode="payment",
-            success_url=success_url,
-        )
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -67,6 +53,23 @@ class OrderCreateView(LoginRequiredMixin, FormView):
             }
             for item in basket_qs
         }
+
+        line_items = []
+        for item in basket_qs:
+            unit_minor = (item.product.price * Decimal("100")).quantize(
+                Decimal("1"), rounding=ROUND_HALF_UP
+            )
+            line_items.append(
+                {
+                    "price_data": {
+                        "currency": "rub",
+                        "product_data": {"name": item.product.name},
+                        "unit_amount": int(unit_minor),
+                    },
+                    "quantity": item.quantity,
+                }
+            )
+
         Order.objects.create(
             first_name=form.cleaned_data["first_name"],
             last_name=form.cleaned_data["last_name"],
@@ -75,8 +78,19 @@ class OrderCreateView(LoginRequiredMixin, FormView):
             basket_history=basket_history,
             initiator=self.request.user,
         )
+
+        base = settings.SITE_URL.rstrip("/")
+        success_path = reverse("orders:order-success")
+        cancel_path = reverse("orders:order-canceled")
+        checkout_session = stripe.checkout.Session.create(
+            line_items=line_items,
+            mode="payment",
+            success_url=f"{base}{success_path}?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{base}{cancel_path}",
+        )
+
         basket_qs.delete()
-        return super().form_valid(form)
+        return HttpResponseRedirect(checkout_session.url, status=303)
 
 
 class OrderSuccessView(TemplateView):
@@ -86,3 +100,8 @@ class OrderSuccessView(TemplateView):
         context = super().get_context_data(**kwargs)
         context["title"] = "Store - Спасибо за заказ!"
         return context
+
+
+class CanceledView(TemplateView):
+    template_name = "orders/canceled.html"
+
