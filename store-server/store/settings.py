@@ -232,6 +232,7 @@ CELERY_ENABLE_UTC = True
 # Stripe
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY")
-# STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET")
-# STRIPE_API_VERSION = os.environ.get("STRIPE_API_VERSION")
-# STRIPE_API_VERSION = os.environ.get("STRIPE_API_VERSION")
+# Signing secret for webhooks (Dashboard → Webhooks, or `stripe listen` → whsec_…)
+STRIPE_ENDPOINT_SECRET = os.environ.get("STRIPE_ENDPOINT_SECRET", "") or os.environ.get(
+    "STRIPE_WEBHOOK_SECRET", ""
+)

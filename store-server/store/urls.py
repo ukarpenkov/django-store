@@ -6,6 +6,8 @@ from django.urls import include, path
 
 from products.views import IndexView
 
+from orders.views import my_webhook_view
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", IndexView.as_view(), name="index"),
@@ -16,6 +18,7 @@ urlpatterns = [
     ),
     path("accounts/", include("allauth.urls")),
     path("orders/", include(("orders.urls", "orders"), namespace="orders")),
+    path("webhook/stripe/", my_webhook_view, name="stripe-webhook"),
 ]
 
 if settings.DEBUG:

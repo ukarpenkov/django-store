@@ -9,6 +9,14 @@ from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
 
 
+from django.views.decorators.csrf import csrf_exempt
+
+client = stripe.StripeClient(settings.STRIPE_SECRET_KEY)
+endpoint_secret = settings.STRIPE_ENDPOINT_SECRET   
+
+from django.http import HttpResponse
+
+
 from orders.form import OrderForm
 from orders.models import Order
 from products.models import Basket
@@ -70,7 +78,7 @@ class OrderCreateView(LoginRequiredMixin, FormView):
                 }
             )
 
-        Order.objects.create(
+        order = Order.objects.create(
             first_name=form.cleaned_data["first_name"],
             last_name=form.cleaned_data["last_name"],
             email=form.cleaned_data["email"],
@@ -87,6 +95,7 @@ class OrderCreateView(LoginRequiredMixin, FormView):
             mode="payment",
             success_url=f"{base}{success_path}?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{base}{cancel_path}",
+            client_reference_id=str(order.id),
         )
 
         basket_qs.delete()
@@ -104,4 +113,43 @@ class OrderSuccessView(TemplateView):
 
 class CanceledView(TemplateView):
     template_name = "orders/canceled.html"
+
+
+def fulfill_checkout(session_id: str) -> None:
+    session = stripe.checkout.Session.retrieve(session_id)
+    ref = session.get("client_reference_id")
+    if not ref:
+        return
+    try:
+        order_pk = int(ref)
+    except (TypeError, ValueError):
+        return
+    Order.objects.filter(pk=order_pk, status=Order.CREATED).update(status=Order.PAID)
+
+
+@csrf_exempt
+def my_webhook_view(request):
+  payload = request.body
+
+  sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+  event = None
+
+  try:
+    event = client.construct_event(
+      payload, sig_header, endpoint_secret
+    )
+  except ValueError as e:
+    # Invalid payload
+    return HttpResponse(status=400)
+  except stripe.error.SignatureVerificationError as e:
+    # Invalid signature
+    return HttpResponse(status=400)
+
+  if (
+    event['type'] == 'checkout.session.completed'
+    or event['type'] == 'checkout.session.async_payment_succeeded'
+  ):
+    fulfill_checkout(event['data']['object']['id'])
+
+  return HttpResponse(status=200)
 
