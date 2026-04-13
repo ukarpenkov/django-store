@@ -8,7 +8,7 @@ class ProductCategoryAdmin(admin.ModelAdmin):
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'price', 'quantity', 'category']
+    list_display = ['name', 'price', 'quantity', 'category', 'stripe_product_id', 'stripe_product_price_id']
     list_filter = ['category']
     list_editable = ['price', 'quantity']
     search_fields = ['name', 'description']

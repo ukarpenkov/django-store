@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
-
+import stripe
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 class ProductCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -23,9 +24,23 @@ class Product(models.Model):
         related_name="products",
         on_delete=models.CASCADE,
     )
+    stripe_product_id = models.CharField(max_length=100, null=True, blank=True)
+    stripe_product_price_id = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return str(self.name)
+    
+    def create_stripe_product_price(self):
+        stripe_product_id = stripe.Product.create(
+            name=self.name,
+            description=self.description,
+        )
+        stripe_product_price_id = stripe.Price.create(
+            product=stripe_product_id,
+            unit_amount=int(self.price * 100),
+            currency="rub",
+        )
+        return stripe_product_id, stripe_product_price_id
 
 
 class Basket(models.Model):
