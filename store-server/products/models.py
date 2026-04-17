@@ -1,7 +1,17 @@
+from decimal import Decimal, ROUND_HALF_UP
+
 from django.conf import settings
 from django.db import models
 import stripe
+
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
+def _price_to_stripe_unit_amount(price) -> int:
+    minor = (price * Decimal("100")).quantize(
+        Decimal("1"), rounding=ROUND_HALF_UP
+    )
+    return int(minor)
 
 class ProductCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -29,18 +39,70 @@ class Product(models.Model):
 
     def __str__(self):
         return str(self.name)
-    
+
+    def save(self, *args, **kwargs):
+        old = None
+        if self.pk:
+            old = (
+                Product.objects.filter(pk=self.pk)
+                .values(
+                    "name",
+                    "description",
+                    "price",
+                    "stripe_product_id",
+                    "stripe_product_price_id",
+                )
+                .first()
+            )
+        super().save(*args, **kwargs)
+
+        stripe_field_updates = {}
+        if not self.stripe_product_id:
+            product = stripe.Product.create(
+                name=self.name,
+                description=self.description or "",
+            )
+            price = stripe.Price.create(
+                product=product.id,
+                unit_amount=_price_to_stripe_unit_amount(self.price),
+                currency="rub",
+            )
+            stripe_field_updates["stripe_product_id"] = product.id
+            stripe_field_updates["stripe_product_price_id"] = price.id
+        elif old:
+            desc_old = old.get("description") or ""
+            desc_new = self.description or ""
+            if old["name"] != self.name or desc_old != desc_new:
+                stripe.Product.modify(
+                    self.stripe_product_id,
+                    name=self.name,
+                    description=desc_new,
+                )
+            if old["price"] != self.price:
+                price = stripe.Price.create(
+                    product=self.stripe_product_id,
+                    unit_amount=_price_to_stripe_unit_amount(self.price),
+                    currency="rub",
+                )
+                stripe_field_updates["stripe_product_price_id"] = price.id
+
+        if stripe_field_updates:
+            Product.objects.filter(pk=self.pk).update(**stripe_field_updates)
+            for key, value in stripe_field_updates.items():
+                setattr(self, key, value)
+
     def create_stripe_product_price(self):
-        stripe_product_id = stripe.Product.create(
+        """Создаёт Product и Price в Stripe (идентификаторы сохраняются при следующем save())."""
+        product = stripe.Product.create(
             name=self.name,
-            description=self.description,
+            description=self.description or "",
         )
-        stripe_product_price_id = stripe.Price.create(
-            product=stripe_product_id,
-            unit_amount=int(self.price * 100),
+        price = stripe.Price.create(
+            product=product.id,
+            unit_amount=_price_to_stripe_unit_amount(self.price),
             currency="rub",
         )
-        return stripe_product_id, stripe_product_price_id
+        return product.id, price.id
 
 
 class Basket(models.Model):
