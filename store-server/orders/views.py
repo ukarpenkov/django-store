@@ -98,7 +98,6 @@ class OrderCreateView(LoginRequiredMixin, FormView):
             client_reference_id=str(order.id),
         )
 
-        basket_qs.delete()
         return HttpResponseRedirect(checkout_session.url, status=303)
 
 
@@ -124,7 +123,27 @@ def fulfill_checkout(session_id: str) -> None:
         order_pk = int(ref)
     except (TypeError, ValueError):
         return
-    Order.objects.filter(pk=order_pk, status=Order.CREATED).update(status=Order.PAID)
+    order = Order.objects.filter(pk=order_pk).select_related("initiator").first()
+    if not order:
+        return
+
+    updated = Order.objects.filter(pk=order_pk, status=Order.CREATED).update(
+        status=Order.PAID
+    )
+    if not updated:
+        return
+
+    purchased_basket_ids = []
+    for basket_id in order.basket_history.keys():
+        try:
+            purchased_basket_ids.append(int(basket_id))
+        except (TypeError, ValueError):
+            continue
+
+    if purchased_basket_ids:
+        Basket.objects.filter(
+            user=order.initiator, id__in=purchased_basket_ids
+        ).delete()
 
 
 @csrf_exempt
