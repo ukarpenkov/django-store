@@ -105,6 +105,9 @@
                 <li>
                   <a class="dropdown-item" href="{% url 'products:basket' %}">Корзина</a>
                 </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'orders:order-list' %}">Заказы</a>
+                </li>
                 {% if user.is_staff %}
                 <li><a class="dropdown-item" href="{% url 'admin:index' %}">Админ-панель</a></li>
                 {% endif %}

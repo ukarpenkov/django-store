@@ -1,7 +1,7 @@
 {% extends "products/base.html" %}
 {% load static %}
 
-{% block head_title %}Store - Заказ №12345{% endblock %}
+{% block head_title %}{{ title }}{% endblock %}
 
 {% block css %}
   <link href="{% static 'vendor/css/orders.css' %}" rel="stylesheet" />
@@ -11,8 +11,9 @@
 <section style="padding-top: 80px;">
     <div class="container pt-5">
         <div class="text-center mt-5">
-            <h1>Заказ №12345</h1>
-            <div class="orders mt-5">
+            <h1>Заказ №{{ order.pk }}</h1>
+            <p class="text-muted">{{ order.get_status_display }} · {{ order.created|date:"d.m.Y H:i" }}</p>
+            <div class="orders mt-5 text-left">
                 <table class="table">
                     <thead>
                     <tr>
@@ -23,34 +24,23 @@
                     </tr>
                     </thead>
                     <tbody>
+                    {% for bid, item in order.basket_history.items %}
                     <tr>
-                        <th scope="row">
-                            Худи черного цвета с монограммами adidas Originals
-                        </th>
-                        <td>1</td>
-                        <td>6 090,00 руб.</td>
-                        <td>6 090,00 руб.</td>
+                        <th scope="row">{{ item.product_name }}</th>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.price }} руб.</td>
+                        <td>{{ item.sum }} руб.</td>
                     </tr>
+                    {% empty %}
                     <tr>
-                        <th scope="row">
-                            Синяя куртка The North Face
-                        </th>
-                        <td>1</td>
-                        <td>23 725,00 руб.</td>
-                        <td>23 725,00 руб.</td>
+                        <td colspan="4" class="text-muted text-center">Нет позиций в заказе</td>
                     </tr>
-                    <tr>
-                        <th scope="row">
-                            Коричневый спортивный oversized-топ ASOS DESIGN
-                        </th>
-                        <td>2</td>
-                        <td>3 390,00 руб.</td>
-                        <td>6 780,00 руб.</td>
-                    </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
-                <p class="float-right h4 mt-3">Итого 36 595,00 руб.</p>
+                <p class="float-right h4 mt-3">Итого {{ order.total_sum|floatformat:2 }} руб.</p>
             </div>
+            <p class="clearfix mt-5"><a href="{% url 'orders:order-list' %}">← К списку заказов</a></p>
         </div>
     </div>
 </section>

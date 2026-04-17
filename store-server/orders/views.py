@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import TemplateView
+from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import FormView
 
 
@@ -22,6 +22,35 @@ from orders.models import Order
 from products.models import Basket
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
+class OrderListView(LoginRequiredMixin, ListView):
+    model = Order
+    template_name = "orders/orders.html"
+    context_object_name = "orders"
+
+    def get_queryset(self):
+        return Order.objects.filter(initiator=self.request.user).order_by("-created")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Store - Заказы"
+        return context
+
+
+class OrderDetailView(LoginRequiredMixin, DetailView):
+    model = Order
+    template_name = "orders/order.html"
+    context_object_name = "order"
+
+    def get_queryset(self):
+        return Order.objects.filter(initiator=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = f"Store - Заказ №{self.object.pk}"
+        return context
+
 
 class OrderCreateView(LoginRequiredMixin, FormView):
     template_name = "orders/order-create.html"

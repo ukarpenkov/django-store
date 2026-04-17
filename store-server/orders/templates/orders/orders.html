@@ -13,6 +13,7 @@
         <div class="text-center mt-5">
             <h1>Заказы</h1>
             <div class="orders mt-5">
+                {% if orders %}
                 <table class="table">
                     <thead>
                     <tr class="table-light">
@@ -24,35 +25,27 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <th scope="row">1</th>
-                        <td>Оплачен</td>
-                        <td>21 авг. 21 года</td>
-                        <td>5 070 руб.</td>
+                    {% for order in orders %}
+                    <tr
+                      {% if order.status == order.DELIVERED %}class="table-success"
+                      {% elif order.status == order.ON_WAY %}class="table-info"
+                      {% elif order.status == order.PAID %}class="table-light"
+                      {% endif %}
+                    >
+                        <th scope="row">{{ order.pk }}</th>
+                        <td>{{ order.get_status_display }}</td>
+                        <td>{{ order.created|date:"d.m.Y H:i" }}</td>
+                        <td>{{ order.total_sum|floatformat:2 }} руб.</td>
                         <td>
-                            <a href="order.html">просмотреть</a>
+                            <a href="{% url 'orders:order-detail' order.pk %}">просмотреть</a>
                         </td>
                     </tr>
-                    <tr class="table-success">
-                        <th scope="row">2</th>
-                        <td>Досталвен</td>
-                        <td>16 июля 21 года</td>
-                        <td>4 876 руб.</td>
-                        <td>
-                            <a href="order.html">просмотреть</a>
-                        </td>
-                    </tr>
-                    <tr class="table-info">
-                        <th scope="row">3</th>
-                        <td>В пути</td>
-                        <td>14 нояб. 21 года</td>
-                        <td>9 566 руб.</td>
-                        <td>
-                            <a href="order.html">просмотреть</a>
-                        </td>
-                    </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
+                {% else %}
+                <p class="text-muted mt-4">У вас пока нет заказов.</p>
+                {% endif %}
             </div>
         </div>
     </div>
