@@ -25,10 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-d*$=zz$o!p)bn7no^8-57!d3@4pds(#=vqa06*+8^!7b59#it4"
+SECRET_KEY = os.environ.get("SECRET_KEY", "")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG")
 ALLOWED_HOSTS = ["*"]
 
 INTERNAL_IPS = [
@@ -96,7 +96,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.environ.get("DB_NAME", "store_db"),
         "USER": os.environ.get("DB_USER", "store_user"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", "your_password"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
         "HOST": os.environ.get("DB_HOST", "localhost"),
         "PORT": os.environ.get("DB_PORT", "5432"),
     }
@@ -185,7 +185,7 @@ LOGIN_URL = "/users/login/"
 LOGIN_REDIRECT_URL = "/"
 
 # Email configuration
-DEFAULT_FROM_EMAIL = "xxxxx"
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "")
 SITE_URL = "http://127.0.0.1:8000"
 
 
@@ -193,8 +193,8 @@ EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.yandex.com")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 465))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-EMAIL_USE_SSL = False
-EMAIL_USE_TLS = True
+EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", "False").lower() in ("1", "true", "yes")
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() in ("1", "true", "yes")
 
 
 AUTHENTICATION_BACKENDS = [
@@ -222,11 +222,19 @@ CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://127.0.0.1:6379/
 CELERY_RESULT_BACKEND = os.environ.get(
     "CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/0"
 )
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = "UTC"
-CELERY_ENABLE_UTC = True
+CELERY_ACCEPT_CONTENT = [
+    item.strip()
+    for item in os.environ.get("CELERY_ACCEPT_CONTENT", "json").split(",")
+    if item.strip()
+]
+CELERY_TASK_SERIALIZER = os.environ.get("CELERY_TASK_SERIALIZER", "json")
+CELERY_RESULT_SERIALIZER = os.environ.get("CELERY_RESULT_SERIALIZER", "json")
+CELERY_TIMEZONE = os.environ.get("CELERY_TIMEZONE", "UTC")
+CELERY_ENABLE_UTC = os.environ.get("CELERY_ENABLE_UTC", "True").lower() in (
+    "1",
+    "true",
+    "yes",
+)
 
 
 # Stripe
