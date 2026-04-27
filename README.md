@@ -1,5 +1,4 @@
-# Django Store - Technical README
-
+# Django Store
 ## Overview
 
 This repository contains a Django-based e-commerce template project with:
